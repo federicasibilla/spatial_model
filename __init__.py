@@ -9,15 +9,13 @@ import matplotlib.pyplot as plt
 from time import time
 from mpl_toolkits import mplot3d
 from space_dynamics import *
-from adhoc import *
 
 
 # initialize R0
-n_r = 10
-n_s = 3
-n   = 101
-R0  = np.random.uniform(80, 120, size=(n, n, n_r))
-#R0=R0_adhoc()
+n_r = 3
+n_s = 2
+n   = 100
+R0  = np.random.uniform(8, 12, size=(n, n, n_r))
 
 # define parameters
 param = {
@@ -28,13 +26,17 @@ param = {
     'tau': 10,                                         # reinsertion rate inv. [time]
     # sor algorithm parameters
     'n'  : n,                                          # grid points in each dim
-    'sor': 1.55,                                       # relaxation parameter
-    'L0' : 5                                           # grid true size        [length]
+    'sor': 1.38,                                       # relaxation parameter
+    'L0' : 10                                          # grid true size        [length]
 }
 
 # initialize species 
-#N = N0_adhoc()
-N = np.random.uniform(80, 120, size=(n, n, n_s))
+N = np.zeros((n, n, n_s))
+# random species disposition
+for i in range(n):
+    for j in range(n):
+        k = np.random.randint(0, n_s)  
+        N[i, j, k] = 1
 
 # make matrices
 up_mat  = np.random.uniform(0, 1, size=(n_s,n_r))
@@ -51,7 +53,7 @@ mat = {
 #R_ongrid(N,param)
 
 # run SOR algorithm
-R_eq = SOR(N,param,mat,1e-1)
+R_eq = SOR(N,param,mat,1e-2)
 R_ongrid(R_eq,param)
 
 

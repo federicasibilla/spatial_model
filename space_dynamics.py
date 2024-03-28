@@ -59,11 +59,6 @@ def SOR(N,param,mat,acc):
     # initialization and boundary conditions setting
     R  = param['R0'].copy()        # matrice n x n x n_R
     R0 = param['R0'].copy()        # store initial values to use in replenishment 
-    for i in range(len(R)):
-        R[i,0,:]  = 100              # Left boundary
-        R[i,-1,:] = 100              # Right boundary
-        R[0,i,:]  = 100              # Lower boudary
-        R[-1,i,:] = 100              # Upeer boundary
 
     # keep track of size of update
     delta = R.copy()
@@ -84,19 +79,25 @@ def SOR(N,param,mat,acc):
 
         # implement red/blue updates to make starting point ininfluential
         # loop on red
-        for i in np.arange(1,n-1):
-            start = 2 if i%2==0 else 1
-            for j in np.arange(start,n-1,2):
-              delta[i,j] = 0.25*(R[i,j+1,:]+R[i,j-1,:]+R[i+1,j,:]+R[i-1,j,:]+dx**2*ff[i,j,:])-R[i,j,:]
+        for i in np.arange(0,n):
+            start = 1 if i%2==0 else 0
+            for j in np.arange(start,n,2):
+              # next index for pbc (for the previous one pbc are automatic)
+              nexti = (i+1) % n
+              nextj = (j+1) % n
+              delta[i,j] = 0.25*(R[i,nextj,:]+R[i,j-1,:]+R[nexti,j,:]+R[i-1,j,:]+dx**2*ff[i,j,:])-R[i,j,:]
               R[i,j,:] += delta[i,j,:]*param['sor']
         # loop in blue
-        for i in np.arange(1,n-1):
-            start = 1 if i%2==0 else 2
-            for j in np.arange(start,n-1,2):
-              delta[i,j] = 0.25*(R[i,j+1,:]+R[i,j-1,:]+R[i+1,j,:]+R[i-1,j,:]+dx**2*ff[i,j,:])-R[i,j,:]
+        for i in np.arange(0,n):
+            start = 0 if i%2==0 else 1
+            for j in np.arange(start,n,2):
+              # next index for pbc (for the previous one pbc are automatic)
+              nexti = (i+1) % n
+              nextj = (j+1) % n
+              delta[i,j] = 0.25*(R[i,nextj,:]+R[i,j-1,:]+R[nexti,j,:]+R[i-1,j,:]+dx**2*ff[i,j,:])-R[i,j,:]
               R[i,j,:] += delta[i,j,:]*param['sor']
         # check updates
-        delta_max = np.max(np.abs(delta[1:n-1,1:n-1,:]))
+        delta_max = np.max(np.abs(delta))
         delta_max_list.append(delta_max)
 
         print("N_iter %d delta_max %e\r" % (len(delta_max_list), delta_max), end='')
@@ -127,11 +128,9 @@ def R_ongrid(R,param):
     n_r = R.shape[2]
     fig = plt.figure(figsize=(18, 6))
     axs = [fig.add_subplot(1, n_r, i+1, projection='3d') for i in range(n_r)]
-    cmaps = ['plasma', 'ocean','CMRmap'] # att.va bene solo per 2 nut
 
     for i in range(n_r):
         ax = axs[i]
-        #cmap=cmaps[i]
         surf = ax.plot_surface(X, Y, R[:, :, i], cmap='ocean', edgecolor='none')
         fig.colorbar(surf, ax=ax, label='Concentration')
         ax.set_xlabel('x')
