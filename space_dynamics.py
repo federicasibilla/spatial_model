@@ -7,6 +7,7 @@
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as mc
 import seaborn as sns
 
 from time import time
@@ -137,6 +138,34 @@ def R_ongrid(R,param):
         ax.set_ylabel('y')
         ax.set_zlabel('Concentration')
         ax.set_title('Resource {}'.format(i+1))
+
+    plt.show()
+
+    return
+
+# define N_ongrid(R) to visualize the disposition of species 
+
+def N_ongrid(N):
+    """
+    N: the nxnxn_s matrix containing nxn elements with length n_s composed by all zeros and
+       one corresponding to the species present in the grid point (1 species per grid point)
+
+    plots the grid with current species disposition
+
+    """
+    # define colors for species distinction
+    cmap = plt.cm.get_cmap('viridis', N.shape[2])  
+    norm = mc.Normalize(vmin=0, vmax=N.shape[2]-1)
+
+    # plot gird
+    colors = cmap(norm(np.argmax(N, axis=2)))
+    plt.figure(figsize=(8, 8))
+
+    plt.imshow(colors, interpolation='nearest')
+
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    plt.colorbar(sm, ticks=np.arange(N.shape[2]), label='Indice')
 
     plt.show()
 

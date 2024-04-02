@@ -13,7 +13,7 @@ from space_dynamics import *
 
 # initialize R0
 n_r = 3
-n_s = 2
+n_s = 5
 n   = 100
 R0  = np.random.uniform(8, 12, size=(n, n, n_r))
 
@@ -50,7 +50,7 @@ mat = {
 
 # plot initial states
 #R_ongrid(R0,param)
-#R_ongrid(N,param)
+N_ongrid(N)
 
 # run SOR algorithm
 R_eq = SOR(N,param,mat,1e-2)
