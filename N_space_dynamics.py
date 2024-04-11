@@ -53,8 +53,8 @@ def death_birth(state,G):
 
     """
     # choose cell to kill
-    i = random.randint(0, state.shape[0]) 
-    j = random.randint(0, state.shape[0])
+    i = random.randint(0, state.shape[0]-1) 
+    j = random.randint(0, state.shape[0]-1)
 
     # look at the 8 neighbours (numbered from the bottom counterclockwise)and index for pbc
     n1j = n8j = n7j = j-1
@@ -64,6 +64,21 @@ def death_birth(state,G):
     n7i = n6i = n5i = i-1
     n1i = n2i = n3i = (i+1) % state.shape[0]
     n8i = n4i       = i
+
+    # only kill cells close to an interface (keep searching)
+    while ((state[i,j]==np.array([state[n1i,n1j],state[n2i,n2j],state[n3i,n3j],state[n4i,n4j],
+                   state[n5i,n5j],state[n6i,n6j],state[n7i,n7j],state[n8i,n8j]])).all()):
+                   i = random.randint(0, state.shape[0]-1) 
+                   j = random.randint(0, state.shape[0]-1)
+
+                   # look at the 8 neighbours (numbered from the bottom counterclockwise)and index for pbc
+                   n1j = n8j = n7j = j-1
+                   n3j = n4j = n5j = (j+1) % state.shape[0]
+                   n2j = n6j       = j
+               
+                   n7i = n6i = n5i = i-1
+                   n1i = n2i = n3i = (i+1) % state.shape[0]
+                   n8i = n4i       = i
 
     i_s = np.array([n1i,n2i,n3i,n4i,n5i,n6i,n7i,n8i])
     j_s = np.array([n1j,n2j,n3j,n4j,n5j,n6j,n7j,n8j])

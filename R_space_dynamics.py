@@ -34,40 +34,41 @@ def f(R,R0,N,param,mat):
 
     """
     # resource loss due to uptake
-    out = np.dot((-R*mat['uptake']/(1+R)).T,N.T)
+    out = np.dot((R*mat['uptake']/(1+R)).T,N.T)
     # resource production due to metabolism
     inn = np.dot((1/param['w']*(np.dot(param['w']*param['l']*R*mat['uptake']/(1+R),mat['met'].T))).T,N.T)
     # resource replenishment
     ext = 1/param['tau']*(R0-R)
 
-    return (ext+inn+out)
+    return (ext+inn-out)
 
 #-----------------------------------------------------------------------------------
 # define SOR(param,mat,acc) function to implement the SOR algorithm for integration 
 # on a grid; assumes fixed boundary conditions
 
-def SOR(R,N,param,mat,acc,n):
+def SOR(R,N,param,mat):
     """
     R: current resource concentration (on current grid) matrice n x n x n_R
     N: state vector for individuals (complete matrix on the current grid)
     param: dictionary containing parameters
     mat: dictionary containing matrices
     acc: desired accuracy, determins when to stop algorithm
-    n: current grid size
 
     returns the equilibrium matrix n x n x n_r with concentrations and prints execution time
 
     """
+
+    n   = N.shape[0]               # grid size
     n_r = param['R0'].shape[2]     # numer of nutrients
     dx  = param['L0']/n            # step size
 
     # initialization and boundary conditions setting
-    R0 = change_grid(param['R0'],param['R0'].shape[0],n)
+    R0 = change_grid(param['R0'],n)
 
     # keep track of size of update
     delta = R.copy()
     delta_max = np.max(R)
-    delta_max_list = []
+    delta_max_list = [2,1]
 
     # SOR algorithm and keep track of time
     t1 = time()
@@ -80,7 +81,7 @@ def SOR(R,N,param,mat,acc,n):
         for j in range(n):
             ff[i,j,:] += f(R[i,j,:],R0[i,j,:],N[i,j,:],param,mat)
     
-    while ((delta>acc*R0).any()):
+    while (np.abs(delta_max_list[-1]-delta_max_list[-2])>param['acc']):
 
         # implement red/blue updates to make starting point ininfluential
         # loop on red
@@ -117,7 +118,7 @@ def SOR(R,N,param,mat,acc,n):
 # define SOR_multigrid() function to implement the SOR algorithm on a grid that keeps getting refined
 # the solution at the coarser grid is the initial guess of the finer grid
 
-def SOR_multigrid(n_0,n_ref,R,N,param,mat,acc):
+def SOR_multigrid(n_0,n_ref,R,N,param,mat):
     """
     n_0: initial grid size (corresponds to species grid size)
     n_ref: number of refinements
@@ -131,21 +132,27 @@ def SOR_multigrid(n_0,n_ref,R,N,param,mat,acc):
     coarse grid point
 
     """
-    R = SOR(R,N,param,mat,acc,n_0)                # first run
+    print('grid size is: ', R.shape[0])
+    R = SOR(R,N,param,mat)                              # first run
 
-    for i in range(1,n_ref+1):
-        n = n_0*2*i                               # current grid size
-        N_new = np.zeros((n,n,N.shape[2]))        # new grid for individuals
+    for i in range(2,n_ref+2):
+
+        print('grid refinement number:', i-1)
+        n = n_0*i                                       # current grid size
+        print('grid size is: ', n)
+
+        N_new = np.zeros((n,n,N.shape[2]))              # new grid for individuals
         # inverse restriction of individuals grid
         for k in range(n_0):
             for j in range(n_0):
                 N_new[i*k:i*k+i,i*j:i*j+i,:]=N[k,j,:]
-        R_new   = change_grid(R,R.shape[0],n)     # translate R on a refined grid 
-        SOR(R_new,N_new,param,mat,acc/(3**i),n)   # solve with SOR on this grid
-        R = R_new                                 # use this new solution as next initial guess
+        R_new   = change_grid(R,n)                      # translate R on a refined grid 
+
+        R_eq = SOR(R_new,N_new,param,mat)               # solve with SOR on this grid
+        R = R_eq                                        # use this new solution as next initial guess
 
     # go back to initial grid size
-    R_res = change_grid(R,R.shape[0],n_0)
+    R_res = change_grid(R,n_0)
 
     return R_res
 
@@ -153,15 +160,16 @@ def SOR_multigrid(n_0,n_ref,R,N,param,mat,acc):
 # define change_grid(matrix,n_in,n_fin) function to translate a matrix defined on a coarser grid
 # to a patrix defined on a finer grid (by interpolating) and viceversa (by restricting)
 
-def change_grid(matrix,n_in,n_fin):
+def change_grid(matrix,n_fin):
     """
     matrix: matrix that we wish to translate to a new grid
-    n_in: initial grid size
     n_fin: final grid size
 
     returns a matrix translated on the n_finxn_fin grid
 
     """
+    # extract initial grid size
+    n_in = matrix.shape[0]
 
     # create empty matrix of desired size
     interpolated_matrix = np.zeros((n_fin,n_fin, matrix.shape[2]))
