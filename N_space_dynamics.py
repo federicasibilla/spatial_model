@@ -12,7 +12,6 @@ CONTAINS:
 """
 
 import numpy as np
-
 import random
 
 #-----------------------------------------------------------------------------------------
@@ -32,11 +31,14 @@ def growth_rates(R,N,param,mat):
     """
     growth_matrix = np.zeros((N.shape[0],N.shape[1]))  # matrix to store growth rates
 
+    up_eff = np.zeros((mat['uptake'].shape))
     n_s = N.shape[2]
     for i in range(n_s):
+        if ((R>=mat['ess'][i]).all()):
+            up_eff[i]=mat['uptake'][i]
         species_i_matrix = N[:, :, i]                  # level i of N matrix is matrix of species i
-        uptake = np.sum((R*mat['uptake'][i,:]*param['w']/(1+R)),axis=2)
-        growth_matrix += species_i_matrix*param['g'][i]*param['k']*uptake
+        uptake = np.sum((R*up_eff[i,:]*mat['sign'][i,:]*param['w']/(1+R)),axis=2)
+        growth_matrix += species_i_matrix*param['g'][i]*(uptake-param['m'][i])
  
     return growth_matrix
 
@@ -68,6 +70,10 @@ def death_birth(state,G):
     # only kill cells close to an interface (keep searching)
     while ((state[i,j]==np.array([state[n1i,n1j],state[n2i,n2j],state[n3i,n3j],state[n4i,n4j],
                    state[n5i,n5j],state[n6i,n6j],state[n7i,n7j],state[n8i,n8j]])).all()):
+
+                   if (state[0,0]==state).all():
+                       print('one species has taken up all colony space')
+                       return
                    i = random.randint(0, state.shape[0]-1) 
                    j = random.randint(0, state.shape[0]-1)
 
@@ -87,6 +93,8 @@ def death_birth(state,G):
     gr = np.array([G[n1i,n1j],G[n2i,n2j],G[n3i,n3j],G[n4i,n4j],
                    G[n5i,n5j],G[n6i,n6j],G[n7i,n7j],G[n8i,n8j]
     ])
+    # set to zero probability for negative growth rates
+    gr[gr<0] = 0
     prob = gr/sum(gr)
 
     # extraction of the winner cell

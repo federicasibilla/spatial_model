@@ -30,7 +30,7 @@ def update(R_curr,N_curr,param,mat):
     returns the updated species matrix (both encoded and decoded), the equilibrium concentrations
 
     """
-    R_eq = SOR_multigrid(N_curr.shape[0],param['ref'],R_curr,N_curr,param,mat)      
+    R_eq = SOR_multigrid(N_curr.shape[0],param['ref'],R_curr,N_curr,param,mat)     
     gr   = growth_rates(R_eq,N_curr,param,mat)
     N_curr_dec = decode(N_curr)
     N_new_dec  = death_birth(N_curr_dec,gr)

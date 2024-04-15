@@ -146,13 +146,15 @@ def makenet(met_matrix):
 # defining vispreferences(up_mat) function to visualize the uptake preferences 
 # of the different species
 
-def vispreferences(up_mat):
+def vispreferences(mat):
     """
     up_mat: uptake matrix of the different species and resources
 
     returns a graph to visualize uptake preferences 
 
     """
+    up_mat = mat['uptake']*mat['sign']
+
     plt.figure(figsize=(10, 6))
 
     colors = plt.cm.viridis(np.linspace(0, 1, up_mat.shape[1]))  
@@ -160,16 +162,28 @@ def vispreferences(up_mat):
     legend = 0
     for i in range(up_mat.shape[0]):
         offset = 0 
+        offset_neg = 0
     
         for j in range(up_mat.shape[1]):
             lunghezza_segmento = up_mat[i, j]  
-            if legend<up_mat.shape[1]:
-                plt.bar(i, lunghezza_segmento, bottom=offset, width=0.8, color=colors[j], label=f'Res {j+1}')
-                offset += lunghezza_segmento
-                legend +=1
+            if (lunghezza_segmento>=0):
+                if legend<up_mat.shape[1]:
+                    plt.bar(i, lunghezza_segmento, bottom=offset, width=0.8, color=colors[j], label=f'Res {j+1}')
+                    offset += lunghezza_segmento
+                    legend +=1
+                else:
+                    plt.bar(i, lunghezza_segmento, bottom=offset, width=0.8, color=colors[j])
+                    offset += lunghezza_segmento
             else:
-                plt.bar(i, lunghezza_segmento, bottom=offset, width=0.8, color=colors[j])
-                offset += lunghezza_segmento
+                if legend<up_mat.shape[1]:
+                    plt.bar(i, lunghezza_segmento, bottom=offset_neg, width=0.8, color=colors[j], label=f'Res {j+1}')
+                    offset_neg += lunghezza_segmento
+                    legend +=1
+                else:
+                    plt.bar(i, lunghezza_segmento, bottom=offset_neg, width=0.8, color=colors[j])
+                    offset_neg += lunghezza_segmento
+
+
 
     plt.xlabel('Species')
     plt.ylabel('Uptake')

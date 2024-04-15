@@ -33,10 +33,15 @@ def f(R,R0,N,param,mat):
     returns a vector with value of dR/dt at a specific grid point
 
     """
+    # check essential nutrients presence (at each site)
+    up_eff = np.zeros((mat['uptake'].shape))
+    for i in range(len(N)):
+        if ((R>=mat['ess'][i]).all()):
+            up_eff[i]=mat['uptake'][i]
     # resource loss due to uptake
-    out = np.dot((R*mat['uptake']/(1+R)).T,N.T)
+    out = np.dot((R*up_eff/(1+R)).T,N.T)
     # resource production due to metabolism
-    inn = np.dot((1/param['w']*(np.dot(param['w']*param['l']*R*mat['uptake']/(1+R),mat['met'].T))).T,N.T)
+    inn = np.dot((1/param['w']*(np.dot(param['w']*param['l']*R*up_eff/(1+R),mat['met'].T))).T,N.T)
     # resource replenishment
     ext = 1/param['tau']*(R0-R)
 
