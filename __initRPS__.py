@@ -88,7 +88,7 @@ makenet(met_mat)
 # SIMULATION
 
 # run 1000 steps 
-steps,R_fin,N_fin = run(2000,R0,N,param,mat)
+steps,R_fin,N_fin = run(10,R0,N,param,mat)
 
 # plot final R and N grids
 R_ongrid(R_fin)

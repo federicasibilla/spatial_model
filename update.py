@@ -68,14 +68,14 @@ def run(times,R0,N0,param,mat):
 
         # adapt to finest grid
         r = param['ref']+1
-        R = change_grid(R_eq,N0.shape[0]*r)
-        N = np.zeros((N0.shape[0]*r,N0.shape[0]*r,N0.shape[2]))              # new grid for individuals
+        R = change_grid(R_eq,N_new.shape[0]*r)
+        N = np.zeros((N_new.shape[0]*r,N_new.shape[0]*r,N_new.shape[2]))              # new grid for individuals
 
         # inverse restriction of individuals grid
-        for k in range(N0.shape[0]):
-            for j in range(N0.shape[0]):
+        for k in range(N_new.shape[0]):
+            for j in range(N_new.shape[0]):
                 N[r*k:r*k+r,r*j:r*j+r,:]=N_new[k,j,:] 
-        print('current grid size: ', N0.shape[0]*r)
+        print('current grid size: ', N_new.shape[0]*r)
 
         # run on finest grid
         R_eq = SOR(R,N,param,mat)

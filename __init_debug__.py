@@ -21,20 +21,17 @@ from visualization  import *
 from update import *
 
 # initialize R0
-n_r = 2
-n_s = 2
+n_r = 1
+n_s = 1
 n   = 40
 
-R0  = np.zeros((n, n, n_r))
-# saturate resource c everywhere
-R0[:,:,0]=10
-g   = np.array([0.5,0.5]) 
-m   = np.array([0.,0.])
+R0  = np.random.uniform(7, 10, size=(n, n, n_r))
+g   = np.array([0.5]) 
+m   = np.array([0.])
+
 
 # initialize species grid: A|B
-N = np.zeros((n,n,n_s))
-N[:,:20,0]=1
-N[:,20:,1]=1
+N = np.ones((n,n,n_s))
 
 # define parameters
 param = {
@@ -42,24 +39,24 @@ param = {
     'R0' : R0.copy(),                                  # initial conc. nxnxn_r [monod constants]
     'w'  : np.ones((n_r))*20,                          # energy conversion     [energy/mass]
     'l'  : np.ones((n_r)),                             # leakage               [adim]
-    'tau': np.array([1,1000000]),                      # reinsertion rate inv. [time], basically no replenishment for byprod and no dil.
+    'tau': np.array([1]),                              # reinsertion rate inv. [time], basically no replenishment for byprod and no dil.
     'g'  : g,                                          # growth conv. factors  [1/energy]
     'm'  : m,                                          # maintainance requ.    [energy/time]
     
     # sor algorithm parameters
     'n'  : n,                                          # grid points in each dim
-    'sor': 1.35,                                       # relaxation parameter
-    'L0' : 42,                                         # grid true size        [length]
+    'sor': 1.45,                                       # relaxation parameter
+    'L0' : 40,                                         # grid true size        [length]
     'D'  : 1e5,                                        # diffusion constant    [area/time] 
-    'acc': 1e-13,                                      # maximum accepted stopping criterion   
+    'acc': 1e-15,                                      # maximum accepted stopping criterion   
     'ref': 0                                           # number of grid refinements to perform 
 }
 
 # make matrices
-up_mat   = np.array([[0.8,0.],[0.,0.8]])
-met_mat  = np.array([[0.,0.],[1.,0.]])
+up_mat   = np.array([[0.8]])
+met_mat  = np.array([[0.]])
 sign_mat = np.ones((n_s, n_r))
-mat_ess  = np.array([[0.,0.],[0.,0.]])
+mat_ess  = np.array([[0.]])
 print(up_mat)
 print(met_mat)
 print(sign_mat)
@@ -83,9 +80,9 @@ makenet(met_mat)
 steps,R_fin,N_fin = run(0,R0,N,param,mat)
 
 # plot final R and N grids
-#R_ongrid(R_fin)
-
+R_ongrid_3D(R_fin)
 N_ongrid(encode(N_fin))
+print(R_fin[1,1,0])
 
 # produce a movie of the simulation
 def next(frame):

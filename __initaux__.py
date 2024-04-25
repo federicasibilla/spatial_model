@@ -14,15 +14,14 @@ from visualization  import *
 from update import *
 
 # initialize R0
-n_r = 3
+n_r = 2
 n_s = 2
 n   = 40
 
 R0  = np.zeros((n, n, n_r))
 # saturate resource c everywhere
 R0[:,:,0]=10
-R0[:,:,1]=10
-R0[:,:,2]=2
+R0[:,:,1]=0
 g   = np.array([0.5,0.5]) 
 m   = np.array([0.,0.])
 
@@ -38,35 +37,38 @@ param = {
     # model parameters
     'R0' : R0.copy(),                                  # initial conc. nxnxn_r [monod constants]
     'w'  : np.ones((n_r))*20,                          # energy conversion     [energy/mass]
-    'l'  : np.ones((n_r)),                             # leakage               [adim]
-    'tau': np.array([1,1000000,1000000]),              # reinsertion rate inv. [time] 
+    'l'  : np.ones((n_r))-0.2,                         # leakage               [adim]
+    'tau': np.array([1,1000000]),                      # reinsertion rate inv. [time] 
     'g'  : g,                                          # growth conv. factors  [1/energy]
     'm'  : m,                                          # maintainance requ.    [energy/time]
     
     # sor algorithm parameters
     'n'  : n,                                          # grid points in each dim
-    'sor': 1.80,                                       # relaxation parameter
+    'sor': 1.85,                                       # relaxation parameter
     'L0' : 40,                                         # grid true size        [length]
     'D'  : 1e3,                                        # diffusion constant    [area/time] 
-    'acc': 1e-6,                                       # maximum accepted stopping criterion   
-    'ref': 1                                           # number of grid refinements to perform 
+    'acc': 1e-13,                                      # maximum accepted stopping criterion   
+    'ref': 0                                           # number of grid refinements to perform 
 }
 
 # make matrices
-up_mat   = np.array([[1,0.,0.],[0.,1,1]])
-met_mat  = np.array([[0.,0.,0.],[0.,0.,0.],[1.,0.,0.]])
-sign_mat = np.array([[1.,1.,1.],[1.,1.,1.]])
-mat_ess   = np.array([[0.,0.,0.],[0.,0.,2.2]])
+up_mat   = np.array([[1,0.],[1.,0.]])
+met_mat  = np.array([[0.,0.],[1.,0.]])
+sign_mat = np.array([[1.,1.],[1.,1.]])
+mat_ess  = np.array([[0.,0.],[0.,1]])
+spec_met = np.array([[0.,1.],[0.,0.]])
 print(up_mat)
 print(met_mat)
 print(sign_mat)
 print(mat_ess)
+print(spec_met)
 
 mat = {
-    'uptake' : up_mat,
-    'met'    : met_mat,
-    'sign'   : sign_mat,
-    'ess'    : mat_ess
+    'uptake'  : up_mat,
+    'met'     : met_mat,
+    'sign'    : sign_mat,
+    'ess'     : mat_ess,
+    'spec_met': spec_met
 }
 
 # visualize matrices
@@ -77,7 +79,7 @@ makenet(met_mat)
 # SIMULATION
 
 # run 1000 steps 
-steps,R_fin,N_fin = run(100,R0,N,param,mat)
+steps,R_fin,N_fin = run(1,R0,N,param,mat)
 
 # plot final R and N grids
 R_ongrid(R_fin)

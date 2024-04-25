@@ -40,19 +40,70 @@ def R_ongrid(R):
 
     # R matrix as function of x and y plot (one plot per nutrient)
     n_r = R.shape[2]
-    fig = plt.figure(figsize=(18, 6))
-    axs = [fig.add_subplot(1, n_r, i+1, projection='3d') for i in range(n_r)]
+    fig, axs = plt.subplots(1, n_r, figsize=(18, 6))
 
-    for i in range(n_r):
-        ax = axs[i]
-        surf = ax.plot_surface(X, Y, R[:, :, i], cmap='ocean', edgecolor='none')
-        fig.colorbar(surf, ax=ax, label='Concentration',ticks=np.linspace(np.min(R[:,:,i]),np.max(R[:,:,i]),10))
+    if n_r == 1:
+        im = axs.imshow(R[:, :, 0], cmap='ocean')
+        fig.colorbar(im)
+        axs.set_xlabel('x')
+        axs.set_ylabel('y')
+        axs.set_title('Resource {}'.format(1))
+
+    else:
+
+        for i in range(n_r):
+            ax = axs[i]
+            im = ax.imshow(R[:, :, i], cmap='ocean')
+            fig.colorbar(im, ax=ax, label='Concentration')
+            ax.set_xlabel('x')
+            ax.set_ylabel('y')
+            ax.set_title('Resource {}'.format(i+1))
+
+    plt.savefig('/Users/federicasibilla/Documenti/Tesi/Codice/spatial_model/R.png')
+    plt.close()
+
+    return
+
+#--------------------------------------------------------------------------------
+# same but 3D
+
+def R_ongrid_3D(R):
+    """
+    R: the matrix n x n x n_r with concentrations
+
+    plots the equilibrium concentrations for each nutrient
+
+    """
+
+    # create the grid
+    x = np.arange(R.shape[0])
+    y = np.arange(R.shape[0])
+    X, Y = np.meshgrid(x, y)
+
+    # R matrix as function of x and y plot (one plot per nutrient)
+    n_r = R.shape[2]
+    fig = plt.figure(figsize=(18, 6))
+
+    if n_r == 1:
+        ax = fig.add_subplot(111, projection='3d')
+        surf = ax.plot_surface(X, Y, R[:, :, 0], cmap='ocean')
+        fig.colorbar(surf, ax=ax, label='Concentration')
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('Concentration')
-        ax.set_title('Resource {}'.format(i+1))
+        ax.set_title('Resource {}'.format(1))
 
-    plt.savefig('/Users/federicasibilla/Documenti/Tesi/Codice/spatial_model/R.png')
+    else:
+        for i in range(n_r):
+            ax = fig.add_subplot(1, n_r, i+1, projection='3d')
+            surf = ax.plot_surface(X, Y, R[:, :, i], cmap='ocean')
+            fig.colorbar(surf, ax=ax, label='Concentration')
+            ax.set_xlabel('x')
+            ax.set_ylabel('y')
+            ax.set_zlabel('Concentration')
+            ax.set_title('Resource {}'.format(i+1))
+
+    plt.savefig('/Users/federicasibilla/Documenti/Tesi/Codice/spatial_model/R_3D.png')
     plt.close()
 
     return

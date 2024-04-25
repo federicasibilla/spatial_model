@@ -73,7 +73,7 @@ def death_birth(state,G):
 
                    if (state[0,0]==state).all():
                        print('one species has taken up all colony space')
-                       return
+                       return state
                    i = random.randint(0, state.shape[0]-1) 
                    j = random.randint(0, state.shape[0]-1)
 
@@ -95,7 +95,10 @@ def death_birth(state,G):
     ])
     # set to zero probability for negative growth rates
     gr[gr<0] = 0
-    prob = gr/sum(gr)
+    if sum(gr)!=0:
+        prob = gr/(sum(gr))
+    else:
+        prob = np.ones((len(gr)))/len(gr)
 
     # extraction of the winner cell
     winner_idx = np.random.choice(np.arange(len(gr)), p=prob)
